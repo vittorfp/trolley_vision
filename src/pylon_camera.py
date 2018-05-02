@@ -1,7 +1,8 @@
 import pypylon
-import matplotlib.pyplot as plt
-import tqdm
+#import matplotlib.pyplot as plt
+#import tqdm
 import numpy as np
+import cv2
 
 print('\n\nBuild against pylon library version:', pypylon.pylon_version.version)
 
@@ -25,16 +26,23 @@ cam.open()
 # Go to full available speed
 # cam.properties['DeviceLinkThroughputLimitMode'] = 'Off'
 
-for key in cam.properties.keys():
-    try:
-        value = cam.properties[key]
-    except IOError:
-        value = '<NOT READABLE>'
+#for key in cam.properties.keys():
+#	try:
+#		value = cam.properties[key]
+#	except IOError:
+#		value = '<NOT READABLE>'
 
-    print('{0} ({1}):\t{2}'.format(key, cam.properties.get_description(key), value))
+#	print('{0} ({1}):\t{2}'.format(key, cam.properties.get_description(key), value))
 
-plt.figure()
-for image in cam.grab_images(1):
-    print(image.shape)
-    plt.imshow(image)
-	plt.show()
+#plt.figure()
+while True:
+	for image in cam.grab_images(1):
+		print(image.shape)
+		cv2.imshow('frame',image)
+		
+		#plt.imshow(image)
+		#plt.show()
+	if cv2.waitKey(0) & 0xFF == ord('q'):
+		break
+
+cv2.destroyAllWindows()
