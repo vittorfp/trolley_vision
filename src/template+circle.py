@@ -5,19 +5,6 @@ import glob
 import cv2
 import time
 
-
-def logit(value):
-	coef = 7.631e-07
-	intercept = -5.562 
-	lim = 0.9996
-	p = 1/(1 + np.exp(-( (value*coef) - intercept)) )
-	#print(p)
-	return p
-	if p > lim:
-		return True
-	else:
-		return False
-
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-t", "--template", required=False, help="Path to template image")
@@ -26,23 +13,14 @@ ap.add_argument("-v", "--visualize", help="Flag indicating whether or not to vis
 args = vars(ap.parse_args())
  
 # load the image image, convert it to grayscale, and detect edges
-#template = cv2.imread(args["template"])
-#template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
 template = cv2.imread('../img/template/template1.jpg')
-#template = cv2.imread('../img/template/template.jpg')
-# load the image, clone it for output, and then convert it to grayscale
-#output = template.copy()
 template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-#template = cv2.GaussianBlur(template,(3,3),0)
-#template = cv2.Canny(template, 30, 60)
 (tH, tW) = template.shape[:2]
-#(tH, tW) = template.shape
+
 cv2.imshow("Template", template)	
-#cv2.imwrite('../img/template/template1.jpg' , template )
-f = open("correlation.txt", 'r+')
 
 # loop over the images to find the template in
-for i in range(1008,271040):
+for i in range(1308,271040):
 	# load the image, convert it to grayscale, and initialize the
 	# bookkeeping variable to keep track of the matched region
 	image = cv2.imread('../img/dataset2/img' + str(i) + '.jpg' )
@@ -91,14 +69,24 @@ for i in range(1008,271040):
 	#f.write( str(maxVal) + '\n' )
 	(startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
 	(endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
- 
-	# draw a bounding box around the detected result and display the image
-	if(maxVal> 0.7e7):
-		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
 
+	# draw a bounding box around the detected result and display the image
+	if( maxVal > 0.7e7 ):
+
+		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
+		local = gray[startY:endY, startX:endX]
+		circles = cv2.HoughCircles(local, cv2.HOUGH_GRADIENT, 4,100, maxRadius = 45, minRadius = 40)
+		
+		if circles is not None:
+			circles = np.round(circles[0, :]).astype("int")
+		
+			for (x, y, r) in circles:
+				cv2.circle(image, (x + startX, y + startY), r, (0, 255, 0), 4)
+				cv2.rectangle(image, (x + startX - 5, y + startY - 5), (x + startX + 5, y + startY + 5), (0, 128, 255), -1)
+		t = 0.1
+	else:
+		t=0.01
 	cv2.imshow("Image", image)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
 		break
-	time.sleep(0.01)
-
-f.close()
+	time.sleep(t)
