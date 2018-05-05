@@ -120,7 +120,10 @@ if __name__ == '__main__':
 	print('Training SVM model ...')
 	model = svmInit()
 	model = svmTrain(model, hog_descriptors, labels)
+	model.save("../classifier/svm.xml")
 
+	model = cv2.ml.SVM_create()
+	model.load("../classifier/svm.xml")
 	print('Evaluating model ... ')
 	vis = svmEvaluate(model, digits, hog_descriptors, labels)
 

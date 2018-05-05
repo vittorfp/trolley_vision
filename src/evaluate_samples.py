@@ -8,9 +8,10 @@ print("Iniciando da imagem " + str(num))
 
 f = open("labels.txt", 'a')
 
-for i in range(num,271040):
+for i in range(1008,271040):
 	img = cv2.imread('../img/dataset2/img' + str(i) + '.jpg' )
-	cv2.imshow("Imagem", img)
+	img = cv2.GaussianBlur(img,(5,5),0)
+	cv2.imshow("Imagem", cv2.Canny(img, 30,45))
 	key = cv2.waitKey(0)
 
 	while not(key == 113 or key == 116 or key == 102):

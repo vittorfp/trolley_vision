@@ -14,7 +14,7 @@ def sliding_window(image, stepSize, windowSize):
 
 if __name__ == '__main__':
 	
-	cap = cv2.VideoCapture('../img/trolley-1.mp4')
+	cap = cv2.VideoCapture('../img/lenta.mp4'	)
 	winH,winW = (75,244)
 	i  = 0
 	while( cap.isOpened() ):

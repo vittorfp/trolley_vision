@@ -109,6 +109,7 @@ if __name__ == '__main__':
 	print('Calculating HoG descriptor for every image ... ')
 	#hog_descriptors = []
 	i = 0
+	
 	for img in digits:
 
 		if(i == 0):
