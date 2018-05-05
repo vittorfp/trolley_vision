@@ -3,7 +3,21 @@ import argparse
 import imutils
 import glob
 import cv2
- 
+import time
+
+
+def logit(value):
+	coef = 7.631e-07
+	intercept = -5.562 
+	lim = 0.9996
+	p = 1/(1 + np.exp(-( (value*coef) - intercept)) )
+	#print(p)
+	return p
+	if p > lim:
+		return True
+	else:
+		return False
+
 # construct the argument parser and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-t", "--template", required=False, help="Path to template image")
@@ -14,16 +28,17 @@ args = vars(ap.parse_args())
 # load the image image, convert it to grayscale, and detect edges
 #template = cv2.imread(args["template"])
 #template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-template = cv2.imread('/home/vittorfp/Desktop/Trolley_vision/img/dataset2/img1475.jpg')
+template = cv2.imread('../img/template/template1.jpg')
 #template = cv2.imread('../img/template/template.jpg')
 # load the image, clone it for output, and then convert it to grayscale
-output = template.copy()
+#output = template.copy()
 template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-template = cv2.GaussianBlur(template,(3,3),0)
-template = cv2.Canny(template, 30, 60)
+#template = cv2.GaussianBlur(template,(3,3),0)
+#template = cv2.Canny(template, 30, 60)
 (tH, tW) = template.shape[:2]
+#(tH, tW) = template.shape
 cv2.imshow("Template", template)	
-
+#cv2.imwrite('../img/template/template1.jpg' , template )
 f = open("correlation.txt", 'r+')
 
 # loop over the images to find the template in
@@ -62,8 +77,8 @@ for i in range(1008,271040):
 			clone = np.dstack([edged, edged, edged])
 			cv2.rectangle(clone, (maxLoc[0], maxLoc[1]),
 				(maxLoc[0] + tW, maxLoc[1] + tH), (0, 0, 255), 2)
-			#cv2.imshow("Visualize", clone)
-			#cv2.waitKey(0)
+			cv2.imshow("Visualize", clone)
+			cv2.waitKey(0)
  
 		# if we have found a new maximum correlation value, then ipdate
 		# the bookkeeping variable
@@ -73,15 +88,17 @@ for i in range(1008,271040):
 	# unpack the bookkeeping varaible and compute the (x, y) coordinates
 	# of the bounding box based on the resized ratio
 	(maxVal, maxLoc, r) = found
-	f.write( str(maxVal) + '\n' )
+	#f.write( str(maxVal) + '\n' )
 	(startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
 	(endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
  
 	# draw a bounding box around the detected result and display the image
-	cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
-	#cv2.imshow("Image", image)
-	#if cv2.waitKey(0) & 0xFF == ord('q'):
-	#	break
-
+	if(maxVal> 0.7e7):
+		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
+	
+	cv2.imshow("Image", image)
+	if cv2.waitKey(1) & 0xFF == ord('q'):
+		break
+	time.sleep(0.01)
 
 f.close()
