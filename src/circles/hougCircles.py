@@ -25,7 +25,7 @@ circles = cv2.HoughCircles(gray, cv2.cv.CV_HOUGH_GRADIENT, 1.4,140, maxRadius = 
 if circles is not None:
 	# convert the (x, y) coordinates and radius of the circles to integers
 	circles = np.round(circles[0, :]).astype("int")
- 
+ 	
 	# loop over the (x, y) coordinates and radius of the circles
 	for (x, y, r) in circles:
 		# draw the circle in the output image, then draw a rectangle
