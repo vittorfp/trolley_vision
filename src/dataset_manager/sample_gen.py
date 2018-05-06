@@ -2,7 +2,6 @@
 import cv2
 import time
 import numpy as np
-from common import clock, mosaic
 
 def sliding_window(image, stepSize, windowSize):
 	# slide a window across the image

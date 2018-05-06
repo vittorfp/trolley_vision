@@ -17,7 +17,8 @@ for i in range(1008,271040):
 	while not(key == 113 or key == 116 or key == 102):
 		print("Opcao invalida")
 		key = cv2.waitKey(0)
-		
+	
+	# q	
 	if(key == 113):
 		break
 

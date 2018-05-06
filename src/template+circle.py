@@ -12,6 +12,10 @@ ap.add_argument("-i", "--images", required=True, help="Path to images where temp
 ap.add_argument("-v", "--visualize", help="Flag indicating whether or not to visualize each iteration")
 args = vars(ap.parse_args())
  
+fh = open("dataset_manager/labels.txt", "r") 
+num = len(fh.readlines())
+fh.close()
+
 # load the image image, convert it to grayscale, and detect edges
 template = cv2.imread('../img/template/template1.jpg')
 template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
@@ -21,14 +25,14 @@ cv2.imshow("Template", template)
 trolley_anterior = 0
 circulo_anterior = 0
 # loop over the images to find the template in
-for i in range(1308,271040):
+for i in range(1308,num+1307):
 
 	image = cv2.imread('../img/dataset2/img' + str(i) + '.jpg' )
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	found = None
  
 	# loop over the scales of the image
-	for scale in np.linspace(0.2, 1.0, 20)[::-1]:
+	for scale in np.linspace(0.2, 1.0, 30)[::-1]:
 
 		resized = imutils.resize(gray, width = int(gray.shape[1] * scale))
 		r = gray.shape[1] / float(resized.shape[1])
@@ -58,7 +62,7 @@ for i in range(1308,271040):
 	(startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
 	(endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
 
-	if( maxVal > 0.7e7 ):
+	if( maxVal > 0.65e7 ):
 		
 		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
 		local = gray[startY:endY, startX:endX]
@@ -74,14 +78,14 @@ for i in range(1308,271040):
 			circulo_anterior = 1
 		
 		trolley_anterior = 1
-		t = 0.1
+		t = 0.01
 	else:
 
 		if(trolley_anterior == 1):
 			if(circulo_anterior == 1):
 				print('OK!')
 			else:
-				
+
 				print('Potencial problema!')
 
 		trolley_anterior = 0

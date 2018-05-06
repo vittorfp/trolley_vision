@@ -2,7 +2,6 @@
 import cv2
 import time
 import numpy as np
-from common import clock, mosaic
 
 if __name__ == '__main__':
 	
