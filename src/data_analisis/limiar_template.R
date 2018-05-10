@@ -13,7 +13,7 @@ summary(data)
 
 # Plot da evolução temporal com o limiar
 plot(data$correlation, type = 'line', ylim = range(-1000000:13000000))
-abline(a = 6500000, b = 0, col = 'red',lty = 12)
+abline(a = 6800000, b = 0, col = 'red',lty = 12)
 
 
 # Plot das distribuições

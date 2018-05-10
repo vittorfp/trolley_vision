@@ -15,9 +15,9 @@ if __name__ == '__main__':
 	while( cap.isOpened() ):
 		ret, frame = cap.read()
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)[170:350,200:430]
-		print(i)
-		window = cv2.GaussianBlur(frame,(5,5),0)
-		window = cv2.Canny(window, 30,50)
+		#print(i)
+		#window = cv2.GaussianBlur(frame,(5,5),0)
+		#window = cv2.Canny(window, 30,50)
 		#cv2.imshow("Imagem", cv2.Canny(window, 30,50))
 		#key = cv2.waitKey(0)
 
@@ -29,5 +29,5 @@ if __name__ == '__main__':
 		#if(key == 113):
 		#	break
 
-		cv2.imwrite('../../img/dataset3/img' + str(i) + '.jpg' , window)
+		cv2.imwrite('../../img/dataset3/img' + str(i) + '.jpg' , frame)
 		i += 1
