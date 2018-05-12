@@ -13,9 +13,11 @@ ap.add_argument("-v", "--visualize", help="Flag indicating whether or not to vis
 args = vars(ap.parse_args())
  
 fh = open("dataset_manager/labels.txt", "r") 
-num = len(fh.readlines())
+num = len( fh.readlines() )
 fh.close()
 trolleys = 0
+t = 0.01
+
 
 # load the image image, convert it to grayscale, and detect edges
 template = cv2.imread('../img/template/template1.jpg')
@@ -25,9 +27,11 @@ template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
 cv2.imshow("Template", template)
 trolley_anterior = 0
 circulo_anterior = 0
+
 # loop over the images to find the template in
 historic = [0 ,0 ,0 ,0 ,0 ,0,0 ,0 ,0 ,0 ,0 ,0]
 historic_trolley = [0 ,0 ,0 ,0 ,0 ,0,0 ,0 ,0 ,0 ,0 ,0]
+
 def new_frame(vec,num):
 	vec.pop(0)
 	vec.append(num)
@@ -51,14 +55,16 @@ for i in range(1308,num+1307):
 			break
 		resized = cv2.GaussianBlur(resized,(3,3),0)
 		edged = cv2.Canny(resized, 30, 50)
-	
+		
 		result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
-		(_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
+		( _ , maxVal, _ , maxLoc) = cv2.minMaxLoc(result)
  		
 		if args.get("visualize", False):
 			clone = np.dstack([edged, edged, edged])
-			cv2.rectangle(clone, (maxLoc[0], maxLoc[1]),
-				(maxLoc[0] + tW, maxLoc[1] + tH), (0, 0, 255), 2)
+			cv2.rectangle(clone, 
+				(maxLoc[0]      , maxLoc[1]     ),
+				(maxLoc[0] + tW , maxLoc[1] + tH), 
+				(0, 0, 255),2)
 			cv2.imshow("Visualize", clone)
 			cv2.waitKey(0)
  
@@ -73,7 +79,7 @@ for i in range(1308,num+1307):
 	# define o limiar de deteccao do trolley
 	if( maxVal > 0.65e7 ):
 		historic_trolley = new_frame(historic_trolley,1)
-
+		t = 1
 		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
 		local = gray[startY:endY, startX:endX]
 		circles = cv2.HoughCircles(local, cv2.HOUGH_GRADIENT, 4,100, maxRadius = 45, minRadius = 40)
@@ -81,17 +87,40 @@ for i in range(1308,num+1307):
 		if circles is not None:
 			circles = np.round(circles[0, :]).astype("int")
 			for (x, y, r) in circles:
-				cv2.circle(image, (x + startX, y + startY), r, (0, 255, 0), 4)
-				cv2.rectangle(image, (x + startX - 5, y + startY - 5), (x + startX + 5, y + startY + 5), (0, 128, 255), -1)
+				cv2.circle( image, (x + startX, y + startY), r, (0, 255, 0), 2)
+				cv2.rectangle( image, (x + startX - 2, y + startY - 2), (x + startX + 2, y + startY + 2), (0, 128, 255), -1)
+
+			# delimita o quadrado inscrito no circulo para a busca pelo centro do trolley
+			dentro_bola = gray[ y + startY - r : y + startY + r , x + startX - r:x + startX + r]
+			circulo_interno = cv2.HoughCircles(dentro_bola, cv2.HOUGH_GRADIENT, 20,100, maxRadius = 20, minRadius = 10)
+			
+			x_ext_s = x  
+			y_ext_s = y 
+			r_ext_s = r
+
+			if circulo_interno is not None:
+				circulo_interno = np.round(circulo_interno[0, :]).astype("int")
+				for (x, y, r) in circulo_interno:
+					# AS SEGUINTES LINHAS DE CODIGO SO DEUS SABE COMO FUNCIONA
+					cv2.circle(image, 
+						(x + x_ext_s - r_ext_s + startX, y + y_ext_s - r_ext_s + startY), 
+						r, (0, 255, 0), 2)
+					
+					cv2.rectangle( image, 
+						(x + startX + x_ext_s - r_ext_s - 2, y + startY - 2+ y_ext_s - r_ext_s ), 
+						(x + x_ext_s - r_ext_s + startX + 2, y + startY + 2+ y_ext_s - r_ext_s ), 
+						(0, 128, 255), -1)
 
 			circulo_anterior += 1
 			historic = new_frame(historic,1)
+
 		else:
 			historic = new_frame(historic,0)
 
 		trolley_anterior += 1
-		t = 0.01
+		t = 0.1
 	
+	'''
 	else:
 		
 		historic = new_frame(historic,0)
@@ -108,10 +137,11 @@ for i in range(1308,num+1307):
 				if(sum(historic) == 0):
 					if(sum(historic_trolley) > 3):
 						print( 'Potencial problema!' )
-
+	
 		trolley_anterior = 0
 		circulo_anterior = 0
-		t=0.01
+		t = 0.01
+	'''
 
 	cv2.imshow("Image", image)
 	if cv2.waitKey(1) & 0xFF == ord('q'):
