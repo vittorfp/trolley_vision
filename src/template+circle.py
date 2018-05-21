@@ -12,10 +12,10 @@ ap.add_argument("-i", "--images", required=True, help="Path to images where temp
 ap.add_argument("-v", "--visualize", help="Flag indicating whether or not to visualize each iteration")
 args = vars(ap.parse_args())
  
-fh = open("dataset_manager/labels.txt", "r") 
+fh = open("dataset_manager/labels.txt", "r+") 
 num = len( fh.readlines() )
 fh.close()
-trolleys = 0
+
 t = 0.01
 
 
@@ -24,19 +24,14 @@ template = cv2.imread('../img/template/template1.jpg')
 template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
 (tH, tW) = template.shape[:2]
 
-cv2.imshow("Template", template)
-trolley_anterior = 0
-circulo_anterior = 0
-
-# loop over the images to find the template in
-historic = [0 ,0 ,0 ,0 ,0 ,0,0 ,0 ,0 ,0 ,0 ,0]
-historic_trolley = [0 ,0 ,0 ,0 ,0 ,0,0 ,0 ,0 ,0 ,0 ,0]
+#cv2.imshow("Template", template)
 
 def new_frame(vec,num):
 	vec.pop(0)
 	vec.append(num)
 	return vec
 
+print(num)
 for i in range(1308,num+1307):
 
 	image = cv2.imread('../img/dataset2/img' + str(i) + '.jpg' )
@@ -77,9 +72,10 @@ for i in range(1308,num+1307):
 	(endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
 
 	# define o limiar de deteccao do trolley
+	# Enfatizar de onde esse limiar surgiu
 	if( maxVal > 0.65e7 ):
-		historic_trolley = new_frame(historic_trolley,1)
-		t = 1
+		
+		t = 0.1
 		cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
 		local = gray[startY:endY, startX:endX]
 		circles = cv2.HoughCircles(local, cv2.HOUGH_GRADIENT, 4,100, maxRadius = 45, minRadius = 40)
@@ -87,13 +83,18 @@ for i in range(1308,num+1307):
 		if circles is not None:
 			circles = np.round(circles[0, :]).astype("int")
 			for (x, y, r) in circles:
-				cv2.circle( image, (x + startX, y + startY), r, (0, 255, 0), 2)
-				cv2.rectangle( image, (x + startX - 2, y + startY - 2), (x + startX + 2, y + startY + 2), (0, 128, 255), -1)
+
+				x_centro = x + startX
+				y_centro = y + startY
+
+				cv2.circle( image, ( x_centro, y_centro ), r, (0, 255, 0), 2)
+				cv2.rectangle( image, (x_centro - 2, y_centro - 2), (x_centro + 2, y_centro + 2), (0, 128, 255), -1)
 
 			# delimita o quadrado inscrito no circulo para a busca pelo centro do trolley
-			dentro_bola = gray[ y + startY - r : y + startY + r , x + startX - r:x + startX + r]
+			dentro_bola = gray[ x_centro - r : y_centro + r,       x_centro - r : x_centro + r]
 			circulo_interno = cv2.HoughCircles(dentro_bola, cv2.HOUGH_GRADIENT, 20,100, maxRadius = 20, minRadius = 10)
 			
+			# Parametros do circulo externo
 			x_ext_s = x  
 			y_ext_s = y 
 			r_ext_s = r
@@ -101,25 +102,20 @@ for i in range(1308,num+1307):
 			if circulo_interno is not None:
 				circulo_interno = np.round(circulo_interno[0, :]).astype("int")
 				for (x, y, r) in circulo_interno:
-					# AS SEGUINTES LINHAS DE CODIGO SO DEUS SABE COMO FUNCIONA
-					cv2.circle(image, 
-						(x + x_ext_s - r_ext_s + startX, y + y_ext_s - r_ext_s + startY), 
-						r, (0, 255, 0), 2)
+
+					# AS SEGUINTES LINHAS DE CODIGO SO DEUS SABE COMO FUNCIONA 
+					x_centro_interno = x + x_centro - r_ext_s
+					y_centro_interno = y + y_centro - r_ext_s 
+
+					cv2.circle(image, (x_centro_interno, y_centro_interno),	r, (0, 255, 0), 2 )
 					
 					cv2.rectangle( image, 
-						(x + startX + x_ext_s - r_ext_s - 2, y + startY - 2+ y_ext_s - r_ext_s ), 
-						(x + x_ext_s - r_ext_s + startX + 2, y + startY + 2+ y_ext_s - r_ext_s ), 
-						(0, 128, 255), -1)
-
-			circulo_anterior += 1
-			historic = new_frame(historic,1)
-
-		else:
-			historic = new_frame(historic,0)
-
-		trolley_anterior += 1
-		t = 0.1
+						( x_centro_interno - 2,  y_centro_interno - 2 ),
+						( x_centro_interno + 2,  y_centro_interno + 2 ), 
+						( 0, 128, 255 ), -1 )
 	
+	else:
+		t = 0.01
 	'''
 	else:
 		

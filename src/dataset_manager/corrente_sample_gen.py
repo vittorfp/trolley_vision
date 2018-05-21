@@ -11,8 +11,9 @@ if __name__ == '__main__':
 	# Coloca para abrir a partir do meio do video, que esta' com o angulo
 	# de filmagem melhor que o do inicio
 
-	cap.set(1,1308);
+	#cap.set(1,1308);
 	while( cap.isOpened() ):
+		print(i)
 		ret, frame = cap.read()
 		frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)[170:350,200:430]
 		#print(i)
