@@ -1,9 +1,9 @@
 import numpy as np
 import cv2
 
-cap = cv2.VideoCapture('../img/video2.mp4')
-history = 10 
-varThreshold = 20
+cap = cv2.VideoCapture('../img/trolley-1.mp4')
+history = 20 
+varThreshold = 10
 bShadowDetection = False
 
 fgbg = cv2.createBackgroundSubtractorMOG2(history, varThreshold, bShadowDetection)
